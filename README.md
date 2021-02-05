@@ -13,8 +13,10 @@ $ pip install -r requirements.txt
 
 ## How To Start
 
-Execute the following command to train new model. You can see available arguments in `train.py`.
+Execute the following command to train new model.
 
 ```
 $ python train.py
 ```
+
+To see what arguments are available, add `--help`.

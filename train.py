@@ -65,40 +65,66 @@ def train(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--n_negative", type=int, default=4, help="the number of negative instances"
+        "--n_negative",
+        type=int,
+        default=4,
+        metavar="",
+        help="the number of negative instances (default: %(default)s)",
     )
     parser.add_argument(
         "--gmf_latent_dim",
         type=int,
         default=32,
-        help="the dimension of GMF latent vector",
+        metavar="",
+        help="the dimension of GMF latent vector (default: %(default)s)",
     )
     parser.add_argument(
         "--mlp_latent_dim",
         type=int,
         default=32,
-        help="the dimension of MLP latent vector",
-    )
-    parser.add_argument("--batch_size", type=int, default=256, help="batch size")
-    parser.add_argument(
-        "--n_mlp_layers", type=int, default=4, help="the number of MLP layers"
+        metavar="",
+        help="the dimension of MLP latent vector (default: %(default)s)",
     )
     parser.add_argument(
-        "--learning_rate", type=float, default=1e-4, help="learning rate"
+        "--batch_size",
+        type=int,
+        default=256,
+        metavar="",
+        help="batch size (default: %(default)s)",
     )
     parser.add_argument(
-        "--n_epochs", type=int, default=200, help="the number of epochs"
+        "--n_mlp_layers",
+        type=int,
+        default=4,
+        metavar="",
+        help="the number of MLP layers (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--learning_rate",
+        type=float,
+        default=1e-4,
+        metavar="",
+        help="learning rate (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--n_epochs",
+        type=int,
+        default=200,
+        metavar="",
+        help="the number of epochs (default: %(default)s)",
     )
     parser.add_argument(
         "--save_dir",
         type=str,
         default="./saved_models",
-        help="path to new models' directory",
+        metavar="",
+        help="path to new models' directory (default: %(default)s)",
     )
     parser.add_argument(
         "--load_model_path",
         type=str,
         default=None,
-        help="path to existing model to be loaded",
+        metavar="",
+        help="path to existing model to be loaded (default: %(default)s)",
     )
     train(parser.parse_args())
