@@ -33,21 +33,23 @@ class MovieLensDataset(torch.utils.data.Dataset):
         self.user_inputs = []
         self.item_inputs = []
         self.labels = []
-        for user_id, interactions in enumerate(matrix):
-            for item_id, interaction in enumerate(interactions):
-                if interaction == 1:
-                    self.user_inputs.append(user_id)
-                    self.item_inputs.append(item_id)
-                    self.labels.append(1)
+        for u in range(len(matrix)):
+            for i in range(len(matrix[u])):
+                if matrix[u, i] != 1:
+                    continue
 
-                    for _ in range(n_negative):
-                        while True:
-                            j = np.random.randint(0, self.n_items)
-                            if matrix[user_id, j] == 0:
-                                break
-                        self.user_inputs.append(user_id)
-                        self.item_inputs.append(item_id)
-                        self.labels.append(0)
+                self.user_inputs.append(u)
+                self.item_inputs.append(i)
+                self.labels.append(1)
+
+                for _ in range(n_negative):
+                    while True:
+                        j = np.random.randint(0, self.n_items)
+                        if matrix[u, j] == 0:
+                            break
+                    self.user_inputs.append(u)
+                    self.item_inputs.append(j)
+                    self.labels.append(0)
 
     def __len__(self):
         return len(self.user_inputs)
@@ -226,6 +228,9 @@ if __name__ == "__main__":
         help="path to new models' directory",
     )
     parser.add_argument(
-        "--load_model_path", type=str, default="path to existing model to be loaded"
+        "--load_model_path",
+        type=str,
+        default=None,
+        help="path to existing model to be loaded",
     )
     train(parser.parse_args())
