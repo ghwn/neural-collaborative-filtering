@@ -1,6 +1,6 @@
 # Neural Collaborative Filtering
 
-This repository contains the implementation of [**Neural Collaborative Filtering**](https://arxiv.org/abs/1708.05031) by using PyTorch.
+This repository contains the implementation of [**Neural Collaborative Filtering**](https://arxiv.org/abs/1708.05031) using PyTorch.
 
 
 ## Requirements
