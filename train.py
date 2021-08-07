@@ -16,7 +16,7 @@ def train(args):
         dataset,
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=4,
+        num_workers=args.num_workers,
         pin_memory=True,
     )
 
@@ -141,5 +141,12 @@ if __name__ == "__main__":
         default="ml-latest-small",
         metavar="",
         help="movielens dataset name (default: %(default)s",
+    )
+    parser.add_argument(
+        "--num_workers",
+        type=int,
+        default=0,
+        metavar="",
+        help="how many subprocesses to use for data loading. 0 means that the data will be loaded in the main process. (default: %(default)s)",
     )
     train(parser.parse_args())
