@@ -11,7 +11,11 @@ from models import NeuMF
 def train(args):
     dataset = MovieLensDataset(args.n_negative)
     data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=args.batch_size, shuffle=True
+        dataset,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=True,
     )
 
     neumf = NeuMF(
@@ -38,6 +42,11 @@ def train(args):
         running_loss = 0.0
         avg_loss = 0.0
         for step, (user_vector, item_vector, labels) in enumerate(data_loader, 0):
+            if torch.cuda.is_available():
+                user_vector = user_vector.cuda()
+                item_vector = item_vector.cuda()
+                labels = labels.cuda()
+
             optimizer.zero_grad()
 
             outputs = neumf(user_vector, item_vector).squeeze()

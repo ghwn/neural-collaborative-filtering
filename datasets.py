@@ -58,15 +58,11 @@ class MovieLensDataset(torch.utils.data.Dataset):
         user_input = self.user_inputs[index]
         item_input = self.item_inputs[index]
         label = self.labels[index]
-        tensors = (
+        return (
             torch.tensor(user_input, dtype=torch.long),
             torch.tensor(item_input, dtype=torch.long),
             torch.tensor(label, dtype=torch.float),
         )
-        if torch.cuda.is_available():
-            return tuple([tensor.cuda() for tensor in tensors])
-        else:
-            return tensors
 
     def __load_movielens_ratings(self):
         data_dir = os.path.join(BASE_DIR, "data")
