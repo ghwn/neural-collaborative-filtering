@@ -5,6 +5,7 @@ import zipfile
 import numpy as np
 import pandas as pd
 import torch
+from tqdm import tqdm
 
 BASE_DIR = os.path.abspath(os.path.join(__file__, ".."))
 
@@ -12,39 +13,40 @@ BASE_DIR = os.path.abspath(os.path.join(__file__, ".."))
 class MovieLensDataset(torch.utils.data.Dataset):
     def __init__(self, n_negative):
         super().__init__()
-        ratings = self.__load_movielens_ratings()
-        ratings["userId"] = ratings["userId"] - 1
-        ratings["movieId"] = ratings["movieId"] - 1
-        user_ids = sorted(list(set(ratings["userId"])))
-        item_ids = sorted(list(set(ratings["movieId"])))
-        self.index_to_user = {i: user_id for i, user_id in enumerate(user_ids)}
-        self.user_to_index = {user_id: i for i, user_id in enumerate(user_ids)}
-        self.index_to_item = {i: item_id for i, item_id in enumerate(item_ids)}
-        self.item_to_index = {item_id: i for i, item_id in enumerate(item_ids)}
+        print("Loading movielens dataset...")
+        df = self.__load_movielens_ratings()
+        user_ids = df["userId"].drop_duplicates().reset_index(drop=True)
+        movie_ids = df["movieId"].drop_duplicates().reset_index(drop=True)
+        user_id_to_index = {user_id: index for index, user_id in user_ids.iteritems()}
+        movie_id_to_index = {movie_id: index for index, movie_id in movie_ids.iteritems()}
 
         self.n_users = len(user_ids)
-        self.n_items = len(item_ids)
-        matrix = np.zeros((self.n_users, self.n_items), dtype=np.uint8)
-        for user_id, movie_id, rating, timestamp in ratings.values:
-            matrix[int(user_id), self.item_to_index[int(movie_id)]] = 1
+        self.n_items = len(movie_ids)
 
+        print("Constructing matrix...")
+        matrix = np.zeros((self.n_users, self.n_items), dtype=np.float32)
+        interactions = []
+        for user_id, movie_id, rating, timestamp in df.values:
+            u = user_id_to_index[user_id]
+            i = movie_id_to_index[movie_id]
+            matrix[u, i] = 1.0
+            interactions.append((u, i))
+
+        print("Creating training data...")
         self.user_inputs = []
         self.item_inputs = []
         self.labels = []
-        for u in range(len(matrix)):
-            for i in range(len(matrix[u])):
-                if matrix[u, i] != 1:
-                    continue
 
+        for u, i in tqdm(interactions):
+            if matrix[u, i] == 1.0:
                 self.user_inputs.append(u)
                 self.item_inputs.append(i)
                 self.labels.append(1)
 
                 for _ in range(n_negative):
-                    while True:
-                        j = np.random.randint(0, self.n_items)
-                        if matrix[u, j] == 0:
-                            break
+                    j = np.random.randint(self.n_items)
+                    while matrix[u, j] != 0.0:
+                        j = np.random.randint(self.n_items)
                     self.user_inputs.append(u)
                     self.item_inputs.append(j)
                     self.labels.append(0)
