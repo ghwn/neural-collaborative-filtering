@@ -9,7 +9,9 @@ from models import NeuMF
 
 
 def train(args):
-    dataset = MovieLensDataset(args.n_negative)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    dataset = MovieLensDataset(args.n_negative, args.dataset)
     data_loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -24,12 +26,10 @@ def train(args):
         args.gmf_latent_dim,
         args.mlp_latent_dim,
         args.n_mlp_layers,
-    )
+    ).to(device)
 
     if args.load_model_path:
         neumf.load_state_dict(torch.load(args.load_model_path))
-    if torch.cuda.is_available():
-        neumf = neumf.cuda()
 
     n_steps = len(dataset) // args.batch_size
     criterion = torch.nn.BCELoss()
@@ -42,10 +42,9 @@ def train(args):
         running_loss = 0.0
         avg_loss = 0.0
         for step, (user_vector, item_vector, labels) in enumerate(data_loader, 0):
-            if torch.cuda.is_available():
-                user_vector = user_vector.cuda()
-                item_vector = item_vector.cuda()
-                labels = labels.cuda()
+            user_vector = user_vector.to(device)
+            item_vector = item_vector.to(device)
+            labels = labels.to(device)
 
             optimizer.zero_grad()
 
@@ -135,5 +134,12 @@ if __name__ == "__main__":
         default=None,
         metavar="",
         help="path to existing model to be loaded (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="ml-latest-small",
+        metavar="",
+        help="movielens dataset name (default: %(default)s",
     )
     train(parser.parse_args())

@@ -11,10 +11,10 @@ BASE_DIR = os.path.abspath(os.path.join(__file__, ".."))
 
 
 class MovieLensDataset(torch.utils.data.Dataset):
-    def __init__(self, n_negative):
+    def __init__(self, n_negative, dataset):
         super().__init__()
-        print("Loading movielens dataset...")
-        df = self.__load_movielens_ratings()
+        print("Loading %s dataset..." % dataset)
+        df = self.__load_movielens_ratings(dataset)
         user_ids = df["userId"].drop_duplicates().reset_index(drop=True)
         movie_ids = df["movieId"].drop_duplicates().reset_index(drop=True)
         user_id_to_index = {user_id: index for index, user_id in user_ids.iteritems()}
@@ -64,17 +64,17 @@ class MovieLensDataset(torch.utils.data.Dataset):
             torch.tensor(label, dtype=torch.float),
         )
 
-    def __load_movielens_ratings(self):
+    def __load_movielens_ratings(self, dataset):
         data_dir = os.path.join(BASE_DIR, "data")
         if not os.path.isdir(data_dir):
             os.makedirs(data_dir)
 
-        filepath = os.path.join(data_dir, "movielens.zip")
+        filepath = os.path.join(data_dir, f"{dataset}.zip")
         if not os.path.exists(filepath):
-            url = "http://files.grouplens.org/datasets/movielens/ml-latest-small.zip"
+            url = f"http://files.grouplens.org/datasets/movielens/{dataset}.zip"
             urllib.request.urlretrieve(url, filepath)
             zip_ref = zipfile.ZipFile(filepath, "r")
             zip_ref.extractall(data_dir)
 
-        df = pd.read_csv(os.path.join(data_dir, "ml-latest-small", "ratings.csv"))
+        df = pd.read_csv(os.path.join(data_dir, dataset, "ratings.csv"))
         return df
