@@ -11,7 +11,7 @@ from models import NeuMF
 def train(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    dataset = MovieLensDataset(args.n_negative, args.dataset)
+    dataset = MovieLensDataset(args.num_negatives, args.dataset)
     data_loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -21,24 +21,24 @@ def train(args):
     )
 
     neumf = NeuMF(
-        dataset.n_users,
-        dataset.n_items,
+        dataset.num_users,
+        dataset.num_items,
         args.gmf_latent_dim,
         args.mlp_latent_dim,
-        args.n_mlp_layers,
+        args.num_mlp_layers,
     ).to(device)
 
     if args.load_model_path:
         neumf.load_state_dict(torch.load(args.load_model_path))
 
-    n_steps = len(dataset) // args.batch_size
+    num_steps = len(dataset) // args.batch_size
     criterion = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(neumf.parameters(), lr=args.learning_rate)
 
     if not os.path.isdir(args.save_dir):
         os.makedirs(args.save_dir)
 
-    for epoch in range(args.n_epochs):
+    for epoch in range(args.num_epochs):
         running_loss = 0.0
         avg_loss = 0.0
         for step, (user_vector, item_vector, labels) in enumerate(data_loader, 0):
@@ -58,11 +58,11 @@ def train(args):
             if step % 100 == 99:
                 print(
                     "[epoch %d/%d, step %5d/%d] loss: %.3f"
-                    % (epoch + 1, args.n_epochs, step + 1, n_steps, running_loss / 100)
+                    % (epoch + 1, args.num_epochs, step + 1, num_steps, running_loss / 100)
                 )
                 running_loss = 0.0
 
-        avg_loss /= n_steps
+        avg_loss /= num_steps
         print("epoch %d's average loss: %.3f\n" % (epoch + 1, avg_loss))
 
         model_name = "ncf_%s.pt" % datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -73,7 +73,7 @@ def train(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--n_negative",
+        "--num_negatives",
         type=int,
         default=4,
         metavar="",
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         help="batch size (default: %(default)s)",
     )
     parser.add_argument(
-        "--n_mlp_layers",
+        "--num_mlp_layers",
         type=int,
         default=4,
         metavar="",
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         help="learning rate (default: %(default)s)",
     )
     parser.add_argument(
-        "--n_epochs",
+        "--num_epochs",
         type=int,
         default=200,
         metavar="",

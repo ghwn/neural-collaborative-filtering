@@ -11,7 +11,7 @@ BASE_DIR = os.path.abspath(os.path.join(__file__, ".."))
 
 
 class MovieLensDataset(torch.utils.data.Dataset):
-    def __init__(self, n_negative, dataset):
+    def __init__(self, num_negatives, dataset):
         super().__init__()
         print("Loading %s dataset..." % dataset)
         df = self.__load_movielens_ratings(dataset)
@@ -20,11 +20,11 @@ class MovieLensDataset(torch.utils.data.Dataset):
         user_id_to_index = {user_id: index for index, user_id in user_ids.iteritems()}
         movie_id_to_index = {movie_id: index for index, movie_id in movie_ids.iteritems()}
 
-        self.n_users = len(user_ids)
-        self.n_items = len(movie_ids)
+        self.num_users = len(user_ids)
+        self.num_items = len(movie_ids)
 
         print("Constructing matrix...")
-        matrix = np.zeros((self.n_users, self.n_items), dtype=np.float32)
+        matrix = np.zeros((self.num_users, self.num_items), dtype=np.float32)
         interactions = []
         for user_id, movie_id, rating, timestamp in df.values:
             u = user_id_to_index[user_id]
@@ -43,10 +43,10 @@ class MovieLensDataset(torch.utils.data.Dataset):
                 self.item_inputs.append(i)
                 self.labels.append(1)
 
-                for _ in range(n_negative):
-                    j = np.random.randint(self.n_items)
+                for _ in range(num_negatives):
+                    j = np.random.randint(self.num_items)
                     while matrix[u, j] != 0.0:
-                        j = np.random.randint(self.n_items)
+                        j = np.random.randint(self.num_items)
                     self.user_inputs.append(u)
                     self.item_inputs.append(j)
                     self.labels.append(0)
